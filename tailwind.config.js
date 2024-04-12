@@ -11,18 +11,31 @@ module.exports = {
         gradientBG2: "#2B1030",
         gradientBG3: "#39014C",
         black: "#201B1B",
+        dark: "#030101",
+        stealPink: "#D709D8",
+        federalBlue: "#080F58",
+        russianViolet: "#39014C",
+        eminence: "#763583",
       },
       fontFamily: {
-        "heading-style": "Roboto"
-      }
+        "roboto": ['Roboto', 'sans-serif'],
+      },
+      fontWeight: {
+        "light": 300,
+        "regular": 400,
+        "medium": 500,
+        "bold": 700,
+        "black": 900,
+      },
     },
     fontSize: {
-      "h1": "64px",
+      "h1": "56px",
       "h2": "48px",
       "h3": "40px",
       "h4": "32px",
       "subheading": "20px",
       "paragraph": "18px",
+      "small": "16px",
     }
 
   },
