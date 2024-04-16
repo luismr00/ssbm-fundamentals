@@ -4,6 +4,8 @@ import PunishGame from './pages/PunishGame';
 import NeutralGame from './pages/NeutralGame';
 import EdgeguardGame from './pages/EdgeguardGame';
 import VideoPlayer from './pages/VideoPlayer';
+import LogIn from './pages/LogIn';
+import Register from './pages/Register';
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
         <Route path='/tutorials/neutral-game' element={<NeutralGame />} />
         <Route path='/tutorials/edgeguard-game' element={<EdgeguardGame />} />
         <Route path='/video-player/:id' element={<VideoPlayer />} />
+        <Route path='/login' element={<LogIn />} />
+        <Route path='/register' element={<Register />} />
       </Routes>
     </BrowserRouter>
   );

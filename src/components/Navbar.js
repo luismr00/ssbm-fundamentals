@@ -91,7 +91,7 @@ function ResponsiveAppBar() {
   }
 
   return (
-    <AppBar position="static" color='transparent'>
+    <AppBar position="absolute" color='transparent'>
       <div className='pl-[100px] pr-[100px]'>
         <Container maxWidth="xxl">
           <Toolbar disableGutters>
@@ -283,8 +283,8 @@ function ResponsiveAppBar() {
               </Menu>
             </Box> */}
             <div className="flex flex-row items-center justify-center gap-[16px] text-text-primary">
-              <button className="bg-white text-black py-2 px-5 border-[1px] border-solid border-black">Log In</button>
-              <button className="bg-gray-950 py-2 px-5 text-border-alternate border-[1px] text-white ">Register</button>
+              <a href='/login'><button className="bg-white text-black py-2 px-5 border-[1px] border-solid border-black">Log In</button></a>
+              <a href='/register'><button className="bg-gray-950 py-2 px-5 text-border-alternate border-[1px] text-white ">Register</button></a>
             </div>
 
           </Toolbar>
