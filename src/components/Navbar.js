@@ -48,7 +48,7 @@ import AdbIcon from '@mui/icons-material/Adb';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
 
-const pages = ['Tutorials', 'Resources', 'Pricing', 'Contact'];
+const pages = ['tutorials', 'resources', 'pricing', 'contact'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 function ResponsiveAppBar() {
@@ -150,7 +150,7 @@ function ResponsiveAppBar() {
                   </div>
                   <div className='flex flex-col'>
                     {pages.map((page) => (
-                      page === 'Tutorials' ? (
+                      page === 'tutorials' ? (
                         <div>
                           <div className={`flex justify-between ${tutorialsTabOpen ? 'bg-stealPink' : null} hover:bg-stealPink pl-5 pt-2 pb-2`} style={{cursor: 'pointer'}} onClick={() => setTutorialsTabOpen(!tutorialsTabOpen)}>
                             <p key={page} className="text-white text-paragraph" style={{fontFamily: 'monospace'}}>{page}</p>
@@ -170,7 +170,8 @@ function ResponsiveAppBar() {
                         </div>
                     ) : (
                       <div className='hover:bg-stealPink mb-2 pl-5 pt-2 pb-2'>
-                        <p key={page} className="text-white text-paragraph" style={{fontFamily: 'monospace'}}>{page}</p>
+                        {/* Add an anchor link with an href that points to page */}
+                        <a href={`/${page}`}><p key={page} className="text-white text-paragraph" style={{fontFamily: 'monospace'}}>{page}</p></a>
                       </div>
                     )
                     ))}
@@ -231,7 +232,7 @@ function ResponsiveAppBar() {
             </Typography>
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
               {pages.map((page) => (
-                page === 'Tutorials' ? (
+                page === 'tutorials' ? (
                   <Button
                     key={page}
                     onClick={handleOpenTutorialsMenu}
@@ -241,13 +242,15 @@ function ResponsiveAppBar() {
                     <ExpandMoreIcon />
                   </Button>
                 ) : (
-                  <Button 
-                    key={page}
-                    onClick={handleCloseNavMenu}
-                    sx={{ my: 2, color: 'white', display: 'block' }}
-                  >
-                    {page}
-                  </Button>
+                  <a href={`/${page}`}>
+                    <Button 
+                      key={page}
+                      onClick={handleCloseNavMenu}
+                      sx={{ my: 2, color: 'white', display: 'block' }}
+                    >
+                      {page}
+                    </Button>
+                  </a>
                 )
               ))}
             </Box>
