@@ -86,27 +86,86 @@ const User = require('../models/users');
 
 // Write a post request to register a new user based on the user schema above.
 const registerUser = async (req, res) => {
-    const { email, password, firstName, lastName, country, customCountry, language, plan } = req.body;
+    const {
+        email,
+        password,
+        firstName,
+        lastName,
+        profilePicture,
+        plan,
+        subscription,
+        subscriptionStartDate,
+        subscriptionEndDate,
+        subscriptionStatus,
+        subscriptionPaymentGateway,
+        subscriptionPaymentId,
+        emailVerified,
+        deviceIdentifiers,
+        accountActivated,
+        accountLocked,
+        securityQuestions,
+        promotion,
+        promotionType,
+        promotionDuration,
+        promotionExpirationDate,
+        promotionPromoCode
+    } = req.body;
+
     try {
         const user = await User.create({
             email,
             password,
             firstName,
             lastName,
-            country,
-            customCountry,
-            language,
+            profilePicture,
             plan,
+            subscription,
+            emailVerified,
+            deviceIdentifiers,
+            accountActivated,
+            accountLocked,
+            securityQuestions,
+            promotion,
         });
-        res.status(201).json(user);
+
+        res.status(201).json({success: true, data: user});
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({success: false, message: error.message });
     }
 }
+
+module.exports = {
+    registerUser,
+};
+
+
+
+
+
+const getUserSubscriptions = async (req, res) => {
+    const userId = req.params.userId; // Assuming userId is passed as a route parameter
+    try {
+        // Retrieve the user document from the database
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Extract the subscription details from the user document
+        const subscriptions = user.subscription;
+
+        res.status(200).json(subscriptions);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
 
 
 module.exports = {
     registerUser,
+    getUserSubscriptions,
     // loginUser,
     // getMe,
 

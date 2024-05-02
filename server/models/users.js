@@ -1,83 +1,98 @@
 const mongoose = require('mongoose');
 
-const commonCountries = [
-    // North America
-    { name: 'USA', languages: ['English'] },
-    { name: 'Canada', languages: ['English', 'French'] },
-    { name: 'Mexico', languages: ['Spanish'] },
-    // Central America
-    { name: 'Nicaragua', languages: ['Spanish'] },
-    { name: 'Panama', languages: ['Spanish'] },
-    // South America (excluding Guyana, Suriname, and French Guiana)
-    { name: 'Brazil', languages: ['Portuguese'] },
-    { name: 'Chile', languages: ['Spanish'] },
-    // Europe
-    { name: 'Germany', languages: ['German'] },
-    { name: 'United Kingdom', languages: ['English'] },
-    { name: 'France', languages: ['French'] },
-    { name: 'Italy', languages: ['Italian'] },
-    { name: 'Spain', languages: ['Spanish'] },
-    { name: 'Netherlands', languages: ['Dutch'] },
-    { name: 'Belgium', languages: ['Dutch', 'French', 'German'] },
-    { name: 'Switzerland', languages: ['German', 'French', 'Italian'] },
-    { name: 'Sweden', languages: ['Swedish'] },
-    { name: 'Norway', languages: ['Norwegian'] },
-    { name: 'Denmark', languages: ['Danish'] },
-    { name: 'Finland', languages: ['Finnish', 'Swedish'] },
-    { name: 'Poland', languages: ['Polish'] },
-    { name: 'Greece', languages: ['Greek'] },
-    { name: 'Portugal', languages: ['Portuguese'] },
-    { name: 'Russia', languages: ['Russian'] },
-    // Asia
-    { name: 'South Korea', languages: ['Korean'] },
-    { name: 'Japan', languages: ['Japanese'] },
-    { name: 'Philippines', languages: ['Filipino'] },
-    // Australia and Oceania
-    { name: 'Australia', languages: ['English'] },
-];
-  
-
 const userSchema = new mongoose.Schema(
     {
         email: {
-          type: String,
-          required: [true, 'Please add an email'],
-          unique: true,
+            type: String,
+            required: [true, 'Please add an email'],
+            unique: true,
         },
         password: {
-          type: String,
-          required: [true, 'Please add a password'],
+            type: String,
+            required: [true, 'Please add a password'],
         },
         firstName: {
-          type: String,
-          required: [true, 'Please add a first name'],
+            type: String,
+            required: [true, 'Please add a first name'],
         },
         lastName: {
-          type: String,
-          required: [true, 'Please add a last name'],
-        },
-        country: {
             type: String,
-            enum: commonCountries.map(country => country.name), // Predefined list of common countries
-            required: [true, 'Please add a country'],
-          },
-        customCountry: {
-            type: String // Optional field for custom country input
+            required: [true, 'Please add a last name'],
         },
-        language: {
+        profilePicture: {
             type: String,
-            enum: ['English', 'Spanish'], // This will be updated later on depending who wants to participate in the project to add subtitles in other languages
-            required: [true, 'Please add a language'],
+            default: 'https://via.placeholder.com/150', // Placeholder image that is optional but will have a default value
         },
         plan: {
             type: String,
-            enum: ['basic', 'premium'],
+            enum: ['basic', 'premium', 'none'],
             required: [true, 'Please add a plan'],
         },
-      },
-      {
+        subscription: {
+            start_date: {
+                type: Date,
+                required: true
+            },
+            end_date: {
+                type: Date,
+                required: true
+            },
+            status: {
+                type: String,
+                enum: ['active', 'canceled', 'expired', 'none'],
+                required: true
+            },
+            payment_gateway: {
+                type: String,
+                enum: ['stripe', 'paypal', 'none'],
+                required: true
+            },
+        },
+        emailVerified: {
+            type: Boolean,
+            default: false,
+        },
+        deviceIdentifiers: [String], // Array of device unique identifiers
+        accountActivated: {
+            type: Boolean,
+            default: false,
+        },
+        accountLocked: {
+            type: Boolean,
+            default: false,
+        },
+        securityQuestions: [{
+            question: {
+                type: String,
+                required: true,
+            },
+            answer: {
+                type: String,
+                required: true,
+            }
+        }],
+        promotion: {
+            type: {
+                type: String,
+                enum: ['discount', 'none'],
+            },
+            duration: {
+                type: Number, // Duration in days, months, etc.
+            },
+            expirationDate: {
+                type: Date, // Expiration date of the promotion
+            },
+            promoCode: {
+              type: String, // Optional: Promo code associated with the promotion
+            },
+            discountPercentage: {
+                type: Number, // Optional: Discount percentage for the promotion
+            },
+        },
+    },
+    {
         timestamps: true,
-      }
+    }
 );
 
 module.exports = mongoose.model('User', userSchema);
