@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema(
             enum: ['basic', 'premium', 'none'],
             required: [true, 'Please add a plan'],
         },
+        role: {
+            type: String,
+            enum: ['user', 'admin', 'coach'],
+            default: 'user',
+        },
         subscription: {
             start_date: {
                 type: Date,

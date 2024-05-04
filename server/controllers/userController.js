@@ -1,88 +1,5 @@
-// const jwt = require('jsonwebtoken')
-// const bcrypt = require('bcryptjs')
-// const asyncHandler = require('express-async-handler')
 const User = require('../models/users');
-
-// // @desc    Register new user
-// // @route   POST /api/users
-// // @access  Public
-// const registerUser = asyncHandler(async (req, res) => {
-//   const { name, email, password } = req.body
-
-//   if (!name || !email || !password) {
-//     res.status(400)
-//     throw new Error('Please add all fields')
-//   }
-
-// // Check if user exists
-// const userExists = await User.findOne({ email })
-
-//   if (userExists) {
-//     res.status(400)
-//     throw new Error('User already exists')
-// }
-
-// // Hash password
-// const salt = await bcrypt.genSalt(10)
-// const hashedPassword = await bcrypt.hash(password, salt)
-
-// // Create user
-// const user = await User.create({
-//     name,
-//     email,
-//     password: hashedPassword,
-// })
-
-//   if (user) {
-//     res.status(201).json({
-//       _id: user.id,
-//       name: user.name,
-//       email: user.email,
-//       token: generateToken(user._id),
-//     })
-//   } else {
-//     res.status(400)
-//     throw new Error('Invalid user data')
-//   }
-// })
-
-// // @desc    Authenticate a user
-// // @route   POST /api/users/login
-// // @access  Public
-// const loginUser = asyncHandler(async (req, res) => {
-//   const { email, password } = req.body
-
-//   // Check for user email
-//   const user = await User.findOne({ email })
-
-//   if (user && (await bcrypt.compare(password, user.password))) {
-//     res.json({
-//       _id: user.id,
-//       name: user.name,
-//       email: user.email,
-//       token: generateToken(user._id),
-//     })
-//   } else {
-//     res.status(400)
-//     throw new Error('Invalid credentials')
-//   }
-// })
-
-// // @desc    Get user data
-// // @route   GET /api/users/me
-// // @access  Private
-// const getMe = asyncHandler(async (req, res) => {
-//   res.status(200).json(req.user)
-// })
-
-// // Generate JWT
-// const generateToken = (id) => {
-//   return jwt.sign({ id }, process.env.JWT_SECRET, {
-//     expiresIn: '30d',
-//   })
-// }
-
-//--------------------------------------------
+const crypto = require('crypto');
 
 // Write a post request to register a new user based on the user schema above.
 const registerUser = async (req, res) => {
@@ -134,11 +51,138 @@ const registerUser = async (req, res) => {
     }
 }
 
-module.exports = {
-    registerUser,
+// const loginUser = async (req, res) => {
+//     const { email, password } = req.body;
+
+//     try {
+//         const user = await User.findOne({ email });
+
+//         if (!user) {
+//             return res.status(404).json({ message: 'User not found' });
+//         }
+
+//         const isPasswordMatch = user.password === password;
+        
+//         if (!isPasswordMatch) {
+//             return res.status(401).json({ message: 'Invalid credentials' });
+//         }
+
+//         const tempToken = crypto.randomBytes(20).toString('hex');
+
+//         // Set the token as the userToken cookie
+//         res.cookie('userToken', tempToken, {
+//             maxAge: 900000, // Adjust cookie maxAge to your needs
+//             httpOnly: true,
+//             sameSite: 'None', // Set SameSite attribute to None
+//             secure: true // Require secure connections (HTTPS)
+//         });
+        
+
+//         res.status(200).json({ success: true, data: user });
+//     } catch (error) {
+//         res.status(500).json({ sucess: false, message: error.message });
+//     }
+// }
+
+// const checkSignInStatus = (req, res) => {
+//     // Check if the userToken cookie is present
+//     const userToken = req.cookies.userToken;
+//     try {
+//         if (userToken) {
+//             // User is signed in
+//             res.status(200).json({ success: true, signedIn: true });
+//         } else {
+//             // User is not signed in
+//             res.status(200).json({ success: true, signedIn: false });
+//         }
+//     } catch (error) {
+//         res.status(500).json({ success: false, message: error.message });
+//     }
+// };
+
+// checkSignInStatus = async (req, res) => {
+//     const signedIn = req.session.userId ? true : false;
+//     res.json({ signedIn });
+// };
+
+// const logoutUser = async (req, res) => {
+//     try {
+//         // Perform any necessary logic to invalidate the user token
+//         res.clearCookie('userToken');
+//         res.status(200).json({success: true, message: 'User logged out successfully' });
+//     }
+//     catch (error) {
+//         res.status(500).json({ success: false, message: error.message });
+//     }
+// }
+
+// Login user
+const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const isPasswordMatch = user.password === password;
+
+        if (!isPasswordMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Set userId in session
+        req.session.userId = user._id;
+        req.session.subscription = user.subscription;
+        req.session.role = user.role;
+        // req.session.cookie = {
+        //     maxAge: 900000, // Adjust cookie maxAge to your needs
+        //     httpOnly: true,
+        //     sameSite: 'None', // Set SameSite attribute to None
+        //     secure: true // Require secure connections (HTTPS)
+        // }
+
+        // Generate session token
+        // const tempToken = crypto.randomBytes(20).toString('hex');
+
+        // Set the session token as a cookie
+        // res.cookie('sessionToken', tempToken, {
+        //     maxAge: 900000, // Adjust cookie maxAge to your needs
+        //     httpOnly: true,
+        //     sameSite: 'None', // Set SameSite attribute to None
+        //     secure: true // Require secure connections (HTTPS)
+        // });
+
+        res.status(200).json({ success: true, data: user, session: req.session });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 };
 
+// Logout user
+const logoutUser = async (req, res) => {
+    try {
+        // Clear userId from session
+        delete req.session.userId;
 
+        // Clear session token cookie
+        res.clearCookie('sessionToken');
+
+        res.status(200).json({ success: true, message: 'User logged out successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Check user session information
+const getUserSessionInfo = async (req, res) => {
+    // const signedIn = await req.session.userId ? true : false;
+    const session = await req.session;
+    console.log(session);
+    res.json({ session });
+};
 
 
 
@@ -157,7 +201,7 @@ const getUserSubscriptions = async (req, res) => {
 
         res.status(200).json(subscriptions);
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -165,6 +209,9 @@ const getUserSubscriptions = async (req, res) => {
 
 module.exports = {
     registerUser,
+    loginUser,
+    getUserSessionInfo,
+    logoutUser,
     getUserSubscriptions,
     // loginUser,
     // getMe,
