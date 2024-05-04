@@ -1,24 +1,68 @@
 import React, { useState } from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const LogIn = () => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [user, setUser] = useState(null);
 
-    const mockCredentials = ['admin', 'password123']
+    const navigate = useNavigate();
+    
 
-    const handleSubmit = () => {
-        // Handle form submission
-        if (email === mockCredentials[0] && password === mockCredentials[1]) {
-            // Redirect to dashboard
-            // window.location.href = '/dashboard'
-            alert('Validations passed! Redirect will be implemented soon.')
-        } else {
-            // Display error message
-            alert('Invalid credentials')
+    // const mockCredentials = ['admin', 'password123']
+
+    const getUser = async () => {
+
+        const userData = {
+            email: email,
+            password: password
         }
+
+        const response = await fetch('http://localhost:4000/api/users/login', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'credentials': 'include'
+            },
+            body: JSON.stringify(userData),
+        })
+        const data = await response.json();
+        
+        //handle data error and sucess
+        if (data.success === true) {
+            console.log('Logged in successfully! Test that the cookie is set properly.');
+            // window.location.href = '/';
+            navigate('/');
+            console.log(data.session);
+            return true;
+        } else {
+            console.error(data.message);
+            return false;
+        }
+    }
+
+    const handleSubmit = (event) => {
+        // Handle form submission
+        event.preventDefault();
+
+        if(!email || !password) {
+            alert('Please fill in all fields');
+            return;
+        } else {
+            getUser();
+        }
+        // if (email === mockCredentials[0] && password === mockCredentials[1]) {
+        //     // Redirect to dashboard
+        //     // window.location.href = '/dashboard'
+        //     alert('Validations passed! Redirect will be implemented soon.')
+        // } else {
+        //     // Display error message
+        //     alert('Invalid credentials')
+        // }
     }
 
     return (

@@ -161,7 +161,7 @@ const Form4 = ({
 
         // Get the response from the server
         const data = await response.json();
-        //handle data error
+        //handle data error and sucess
         if (data.success === true) {
             console.log('User registered successfully');
             return true;

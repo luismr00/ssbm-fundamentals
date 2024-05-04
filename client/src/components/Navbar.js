@@ -32,6 +32,7 @@
 
 
 import * as React from 'react';
+import { useEffect } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -57,6 +58,7 @@ function ResponsiveAppBar() {
   const [anchorElTutorials, setAnchorElTutorials] = React.useState(null);
   const [sideNavOpen, setSideNavOpen] = React.useState(false);
   const [tutorialsTabOpen, setTutorialsTabOpen] = React.useState(false);
+  const [signedIn, setSignedIn] = React.useState(false);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -89,6 +91,36 @@ function ResponsiveAppBar() {
   const handleCloseSideMenu = () => {
     setSideNavOpen(false);
   }
+
+  useEffect(() => {
+    const checkSignInStatus = async () => {
+        try {
+            const response = await fetch('http://localhost:4000/api/users/checkSignInStatus', {
+              method: "GET",
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+            });
+
+            const data = await response.json();
+
+            console.log('Data:', data);
+
+            if (data.signedIn) {
+                setSignedIn(true);
+            } else {
+                setSignedIn(false);
+            }
+        } catch (error) {
+            console.error('Error checking sign-in status:', error);
+            setSignedIn(false);
+        }
+    };
+
+    checkSignInStatus();
+  }, []);
+
 
   return (
     <AppBar position="absolute" color='transparent'>
@@ -256,39 +288,43 @@ function ResponsiveAppBar() {
             </Box>
 
             {/* Profile icon button men -> Needs login state condition to work with login/register buttons */}
-            {/* <Box sx={{ flexGrow: 0 }}>
-              <Tooltip title="Open settings">
-                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-                </IconButton>
-              </Tooltip>
-              <Menu
-                sx={{ mt: '45px'}}
-                id="menu-appbar"
-                anchorEl={anchorElUser}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorElUser)}
-                onClose={handleCloseUserMenu}
-              >
-                {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">{setting}</Typography>
-                  </MenuItem>
-                ))}
-              </Menu>
-            </Box> */}
-            <div className="flex flex-row items-center justify-center gap-[16px] text-text-primary">
-              <a href='/login'><button className="bg-white text-black py-2 px-5 border-[1px] border-solid border-black">Log In</button></a>
-              <a href='/register'><button className="bg-gray-950 py-2 px-5 text-border-alternate border-[1px] text-white ">Register</button></a>
-            </div>
+            {signedIn ? (
+              <Box sx={{ flexGrow: 0 }}>
+                <Tooltip title="Open settings">
+                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                    <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                  </IconButton>
+                </Tooltip>
+                <Menu
+                  sx={{ mt: '45px'}}
+                  id="menu-appbar"
+                  anchorEl={anchorElUser}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  open={Boolean(anchorElUser)}
+                  onClose={handleCloseUserMenu}
+                >
+                  {settings.map((setting) => (
+                    <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                      <Typography textAlign="center">{setting}</Typography>
+                    </MenuItem>
+                  ))}
+                </Menu>
+              </Box>
+              
+            ) : (
+              <div className="flex flex-row items-center justify-center gap-[16px] text-text-primary">
+                <a href='/login'><button className="bg-white text-black py-2 px-5 border-[1px] border-solid border-black">Log In</button></a>
+                <a href='/register'><button className="bg-gray-950 py-2 px-5 text-border-alternate border-[1px] text-white ">Register</button></a>
+              </div>
+            )}
 
           </Toolbar>
         </Container>
