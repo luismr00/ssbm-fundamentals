@@ -23,10 +23,10 @@ const LogIn = () => {
 
         const response = await fetch('http://localhost:4000/api/users/login', {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'credentials': 'include'
             },
             body: JSON.stringify(userData),
         })
@@ -34,10 +34,10 @@ const LogIn = () => {
         
         //handle data error and sucess
         if (data.success === true) {
-            console.log('Logged in successfully! Test that the cookie is set properly.');
+            console.log('Logged in successfully!');
             // window.location.href = '/';
+            // console.log(data.session);
             navigate('/');
-            console.log(data.session);
             return true;
         } else {
             console.error(data.message);

@@ -48,6 +48,7 @@ import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
+import { useNavigate } from 'react-router-dom';
 
 const pages = ['tutorials', 'resources', 'pricing', 'contact'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -59,6 +60,8 @@ function ResponsiveAppBar() {
   const [sideNavOpen, setSideNavOpen] = React.useState(false);
   const [tutorialsTabOpen, setTutorialsTabOpen] = React.useState(false);
   const [signedIn, setSignedIn] = React.useState(false);
+
+  const navigate = useNavigate();
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -97,6 +100,7 @@ function ResponsiveAppBar() {
         try {
             const response = await fetch('http://localhost:4000/api/users/checkSignInStatus', {
               method: "GET",
+              credentials: 'include',
               headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
@@ -105,9 +109,9 @@ function ResponsiveAppBar() {
 
             const data = await response.json();
 
-            console.log('Data:', data);
+            // console.log('Data:', data);
 
-            if (data.signedIn) {
+            if (data.session.role) {
                 setSignedIn(true);
             } else {
                 setSignedIn(false);
@@ -121,6 +125,29 @@ function ResponsiveAppBar() {
     checkSignInStatus();
   }, []);
 
+  const logoutUser = async () => {
+    try {
+        const response = await fetch('http://localhost:4000/api/users/logout', {
+          method: "GET",
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            setSignedIn(false);
+            navigate('/');
+        } else {
+            console.error('Error logging out:', data.message);
+        }
+    } catch (error) {
+        console.error('Error logging out:', error);
+    }
+  }
 
   return (
     <AppBar position="absolute" color='transparent'>
@@ -313,7 +340,12 @@ function ResponsiveAppBar() {
                 >
                   {settings.map((setting) => (
                     <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                      <Typography textAlign="center">{setting}</Typography>
+                      {/* Add conditional rendering if logout for now */}
+                      {setting === 'Logout' ? (
+                        <Typography textAlign="center" onClick={logoutUser}>{setting}</Typography>
+                      ) : (
+                        <Typography textAlign="center">{setting}</Typography>
+                      )}
                     </MenuItem>
                   ))}
                 </Menu>

@@ -154,8 +154,10 @@ const loginUser = async (req, res) => {
         //     sameSite: 'None', // Set SameSite attribute to None
         //     secure: true // Require secure connections (HTTPS)
         // });
-
-        res.status(200).json({ success: true, data: user, session: req.session });
+        // console.log(req.session);
+        req.session.save(() => {
+            res.status(200).json({ success: true, data: user, session: req.session });
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -177,9 +179,9 @@ const logoutUser = async (req, res) => {
 };
 
 // Check user session information
-const getUserSessionInfo = async (req, res) => {
+const getUserSessionInfo = (req, res) => {
     // const signedIn = await req.session.userId ? true : false;
-    const session = await req.session;
+    const session = req.session;
     console.log(session);
     res.json({ session });
 };
