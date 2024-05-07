@@ -24,26 +24,14 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session middleware
 app.use(session({
-  secret: 'mySecret',
-  // userId: null,
-  // subscription: null,
-  // role: null,
+  secret: 'mySecret', // Change this to an environment variable later
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
   cookie: {
       maxAge: 1000 * 60 * 60 * 24, // 1 day
   }
 }));
-
-app.get('/', (req, res) => {
-  req.session.userId = '18628762';
-  req.session.subscription = 'premium';
-  req.session.role = 'regular';
-  console.log(req.session);
-  res.send('Welcome to the server');
-}
-);
 
 // --- Routes ---
 

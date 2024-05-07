@@ -168,9 +168,16 @@ const logoutUser = async (req, res) => {
     try {
         // Clear userId from session
         delete req.session.userId;
+        delete req.session.subscription;
+        delete req.session.role;
 
         // Clear session token cookie
-        res.clearCookie('sessionToken');
+        res.clearCookie('connect.sid');
+
+        // Clear session
+        req.session.destroy();
+
+        // console.log(req.session);
 
         res.status(200).json({ success: true, message: 'User logged out successfully' });
     } catch (error) {
@@ -182,7 +189,8 @@ const logoutUser = async (req, res) => {
 const getUserSessionInfo = (req, res) => {
     // const signedIn = await req.session.userId ? true : false;
     const session = req.session;
-    console.log(session);
+    // console.log('Your session is: ');
+    // console.log(session);
     res.json({ session });
 };
 

@@ -11,9 +11,6 @@ const LogIn = () => {
 
     const navigate = useNavigate();
     
-
-    // const mockCredentials = ['admin', 'password123']
-
     const getUser = async () => {
 
         const userData = {
