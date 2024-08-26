@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import { signIn } from '../auth/authService';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 const LogIn = () => {
@@ -10,39 +11,8 @@ const LogIn = () => {
     const [user, setUser] = useState(null);
 
     const navigate = useNavigate();
-    
-    const getUser = async () => {
 
-        const userData = {
-            email: email,
-            password: password
-        }
-
-        const response = await fetch('http://localhost:4000/api/users/login', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(userData),
-        })
-        const data = await response.json();
-        
-        //handle data error and sucess
-        if (data.success === true) {
-            console.log('Logged in successfully!');
-            // window.location.href = '/';
-            // console.log(data.session);
-            navigate('/');
-            return true;
-        } else {
-            console.error(data.message);
-            return false;
-        }
-    }
-
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         // Handle form submission
         event.preventDefault();
 
@@ -50,16 +20,10 @@ const LogIn = () => {
             alert('Please fill in all fields');
             return;
         } else {
-            getUser();
+            await signIn(email, password);
+            alert('Sign in successful');
+            navigate('/');
         }
-        // if (email === mockCredentials[0] && password === mockCredentials[1]) {
-        //     // Redirect to dashboard
-        //     // window.location.href = '/dashboard'
-        //     alert('Validations passed! Redirect will be implemented soon.')
-        // } else {
-        //     // Display error message
-        //     alert('Invalid credentials')
-        // }
     }
 
     return (

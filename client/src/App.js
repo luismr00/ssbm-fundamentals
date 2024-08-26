@@ -9,6 +9,7 @@ import Pricing from './pages/Pricing';
 import Resources from './pages/Resources';
 import LogIn from './pages/LogIn';
 import Register from './pages/Register';
+import ConfirmSignUp from './pages/ConfirmSignUp';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path='/video-player/:id' element={<VideoPlayer />} />
         <Route path='/login' element={<LogIn />} />
         <Route path='/register' element={<Register />} />
+        <Route path='/confirm' element={<ConfirmSignUp />} />
         <Route path='/contact' element={<Contact />} />
         <Route path='/pricing' element={<Pricing />} />
         <Route path='/resources' element={<Resources />} />
