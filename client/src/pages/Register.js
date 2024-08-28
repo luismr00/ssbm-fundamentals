@@ -14,6 +14,34 @@ const Register = () => {
 
     const navigate = useNavigate();
 
+    const handleAssignRole = async () => {
+        const response = await fetch('https://rdlc0l8c7i.execute-api.us-east-1.amazonaws.com/dev/user/subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                groupName: 'Guest',
+                username: email,
+                isRegistering: true // This is a flag to indicate that the user can bypass the middleware when registering
+            }),
+        });
+        const data = await response.json();
+        console.log(data);
+        
+        try {
+            if (response.status === 200) {
+                alert('User added to group');
+            } else {
+                console.log('Failed to add user to group');
+            }
+        } catch (error) {
+            console.error('Failed to add user to group: ', error);
+        }
+    };
+
+
+
     const handleSignUp = async (e) => {
         e.preventDefault();
         if (password !== confirmPassword) {
@@ -22,6 +50,7 @@ const Register = () => {
         }
         try {
           await signUp(username, email, password, firstName, lastName);
+          await handleAssignRole();
           navigate('/confirm', { state: { email, username } });
         } catch (error) {
           alert(`Sign up failed: ${error}`);

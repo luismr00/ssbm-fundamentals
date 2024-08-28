@@ -65,7 +65,7 @@ function ResponsiveAppBar() {
 
   const checkSignInStatus = async () => {
 
-      const token = sessionStorage.getItem('idToken');
+      const token = sessionStorage.getItem('UID');
       if (token) {
           setSignedIn(true);
       } else {

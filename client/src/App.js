@@ -10,6 +10,7 @@ import Resources from './pages/Resources';
 import LogIn from './pages/LogIn';
 import Register from './pages/Register';
 import ConfirmSignUp from './pages/ConfirmSignUp';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path='/contact' element={<Contact />} />
         <Route path='/pricing' element={<Pricing />} />
         <Route path='/resources' element={<Resources />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
   );

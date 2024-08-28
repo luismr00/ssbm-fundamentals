@@ -1,0 +1,65 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: luismr00
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: server
+
+plugins:
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${opt:stage, 'dev'}  # Default stage is 'dev'
+  region: ${opt:region, 'us-east-1'}  # Default region is 'us-east-1'
+  environment:
+    USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+    JWT_SECRET: ${env:JWT_SECRET}
+    SES_VERIFIED_EMAIL: ${env:SES_VERIFIED_EMAIL}
+    SES_EMAIL_DOMAIN: ${env:SES_EMAIL_DOMAIN}
+
+functions:
+
+  # auth:
+  #   handler: lambdas/auth/authHandler.handler
+  #   events:
+  #     - http:
+  #         path: auth/{proxy+}
+  #         method: any
+
+  users:
+    handler: lambdas/users/userHandler.handler
+    events:
+      - http:
+          path: user/{proxy+}
+          method: any
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - cognito-idp:AdminSetUserPassword
+          - cognito-idp:ForgotPassword
+          - cognito-idp:ConfirmForgotPassword
+          - cognito-idp:AdminUpdateUserAttributes
+          - cognito-idp:AdminGetUser
+          - cognito-idp:AdminRemoveUserFromGroup
+          - cognito-idp:AdminAddUserToGroup
+          - ses:SendEmail
+        Resource: 
+          - arn:aws:cognito-idp:us-east-1:902901837865:userpool/${env:COGNITO_USER_POOL_ID}
+          - arn:aws:ses:us-east-1:902901837865:identity/${env:SES_EMAIL_DOMAIN}
+
+package:
+  include:
+    - lambdas/middleware/**
+    - lambdas/db/**
+    - package-lock.json
+    - package.json
+
+  exclude:
+    - node_modules/**
+    - .gitignore
+    - .git/**
+    - .env
+    - README.md
+    - serverless.yml
+    - .serverless/**
+

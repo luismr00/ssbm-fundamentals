@@ -1,4 +1,4 @@
-import { CognitoIdentityProviderClient, InitiateAuthCommand, SignUpCommand, ConfirmSignUpCommand, ResendConfirmationCodeCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { CognitoIdentityProviderClient, InitiateAuthCommand, SignUpCommand, ConfirmSignUpCommand, ResendConfirmationCodeCommand, AdminAddUserToGroupCommand } from "@aws-sdk/client-cognito-identity-provider";
 // import config from "./config.json";
 import awsConfig from "./aws-exports";
 
@@ -20,9 +20,9 @@ export const signIn = async (username, password) => {
     const command = new InitiateAuthCommand(params);
     const { AuthenticationResult } = await cognitoClient.send(command);
     if (AuthenticationResult) {
-      sessionStorage.setItem("idToken", AuthenticationResult.IdToken || '');
-      sessionStorage.setItem("accessToken", AuthenticationResult.AccessToken || '');
-      sessionStorage.setItem("refreshToken", AuthenticationResult.RefreshToken || '');
+      sessionStorage.setItem("UID", AuthenticationResult.IdToken || '');
+      sessionStorage.setItem("ATK", AuthenticationResult.AccessToken || '');
+      sessionStorage.setItem("NXT", AuthenticationResult.RefreshToken || '');
       return AuthenticationResult;
     }
   } catch (error) {
@@ -43,11 +43,6 @@ export const signOut = async () => {
 };
 
 export const signUp = async (username, email, password, firstName, lastName) => {
-  console.log(awsConfig.clientId);
-  console.log('REACT_APP_AWS_PROJECT_REGION:', process.env.REACT_APP_AWS_PROJECT_REGION);
-  console.log('REACT_APP_AWS_COGNITO_REGION:', process.env.REACT_APP_AWS_COGNITO_REGION);
-  console.log('REACT_APP_AWS_USER_POOLS_ID:', process.env.REACT_APP_AWS_USER_POOLS_ID);
-  console.log('REACT_APP_AWS_USER_POOLS_WEB_CLIENT_ID:', process.env.REACT_APP_AWS_USER_POOLS_WEB_CLIENT_ID);
   const params = {
     ClientId: awsConfig.clientId,
     Username: email,
@@ -99,17 +94,45 @@ export const confirmSignUp = async (username, code) => {
   }
 };
 
+// assign the user to a group after sign up
+// export const addUserToGuestGroup = async (username) => {
+//     console.log("Adding user to group");
+//     console.log("Username: ", username);
+//     console.log("User pool ID: ", awsConfig.userPoolId);
+//     const params = {
+//       GroupName: "Guest",
+//       UserPoolId: awsConfig.userPoolId,
+//       Username: username,
+//     };
+
+//     try {
+//       const command = new AdminAddUserToGroupCommand(params);
+//       const response = await cognitoClient.send(command);
+//       console.log("User added to group successfully");
+//       return response;
+//     } catch (error) {
+//       console.error("Error adding user to group: ", error);
+//       throw error;
+//     }
+
+// };
+
 export const resendConfirmationCode = async (username) => {
-    const client = new CognitoIdentityProviderClient({
-        region: awsConfig.region,
-    });
-  
+    
     const command = new ResendConfirmationCodeCommand({
       ClientId: awsConfig.clientId,
       Username: username,
     });
-  
-    return client.send(command);
+
+    try {
+      await cognitoClient.send(command);
+      console.log("Confirmation code resent successfully");
+      return true;
+    } catch (error) {
+      console.error("Error resending confirmation code: ", error);
+      throw error;
+    }
+    
 };
 
 // export const parseJwt = (token) => {
