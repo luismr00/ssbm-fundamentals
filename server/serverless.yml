@@ -12,6 +12,7 @@ provider:
   stage: ${opt:stage, 'dev'}  # Default stage is 'dev'
   region: ${opt:region, 'us-east-1'}  # Default region is 'us-east-1'
   environment:
+    COGNITO_REGION: ${env:COGNITO_REGION}
     USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
     JWT_SECRET: ${env:JWT_SECRET}
     SES_VERIFIED_EMAIL: ${env:SES_VERIFIED_EMAIL}
@@ -19,12 +20,18 @@ provider:
 
 functions:
 
-  # auth:
-  #   handler: lambdas/auth/authHandler.handler
-  #   events:
-  #     - http:
-  #         path: auth/{proxy+}
-  #         method: any
+  auth:
+    handler: lambdas/auth/authHandler.handler
+    events:
+      - http:
+          path: auth/{proxy+}
+          method: any
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - cognito-idp:initiateAuth
+        Resource: 
+          - arn:aws:cognito-idp:us-east-1:902901837865:userpool/${env:COGNITO_USER_POOL_ID}
 
   users:
     handler: lambdas/users/userHandler.handler
