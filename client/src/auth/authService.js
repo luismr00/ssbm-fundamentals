@@ -6,6 +6,53 @@ export const cognitoClient = new CognitoIdentityProviderClient({
   region: awsConfig.region,
 });
 
+const setCookies = async(data) => {
+  // send tokens to backend to set cookies 
+  const {IdToken, AccessToken, RefreshToken} = data;
+  const response = await fetch('http://localhost:4000/dev/auth/set-cookies', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        idToken: IdToken, 
+        accessToken: AccessToken, 
+        refreshToken: RefreshToken
+      })
+  });
+
+  const responseData = await response.json();
+  console.log(responseData);
+
+  if(response.status === 200) {
+      console.log('Cookies set successfully');
+  } else {
+      console.log('Failed to set cookies');
+  }
+};
+
+const removeCookies = async() => {
+  // send request to backend to remove cookies
+  const response = await fetch('http://localhost:4000/dev/auth/remove-cookies', {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+          'Content-Type': 'application/json'
+      }
+  });
+
+  const responseData = await response.json();
+  console.log(responseData);
+
+  if(response.status === 200) {
+      console.log('Cookies removed successfully');
+  } else {
+      console.log('Failed to remove cookies');
+  }
+};
+      
+
 export const signIn = async (username, password) => {
   const params = {
     AuthFlow: "USER_PASSWORD_AUTH",
@@ -20,10 +67,11 @@ export const signIn = async (username, password) => {
     const command = new InitiateAuthCommand(params);
     const { AuthenticationResult } = await cognitoClient.send(command);
     if (AuthenticationResult) {
-      sessionStorage.setItem("UID", AuthenticationResult.IdToken || '');
-      sessionStorage.setItem("ATK", AuthenticationResult.AccessToken || '');
-      sessionStorage.setItem("NXT", AuthenticationResult.RefreshToken || '');
-      return AuthenticationResult;
+      await setCookies(AuthenticationResult);
+      // sessionStorage.setItem("UID", AuthenticationResult.IdToken || '');
+      // sessionStorage.setItem("ATK", AuthenticationResult.AccessToken || '');
+      // sessionStorage.setItem("NXT", AuthenticationResult.RefreshToken || '');
+      return;
     }
   } catch (error) {
     console.error("Error signing in: ", error);
@@ -31,9 +79,32 @@ export const signIn = async (username, password) => {
   }
 };
 
+export const checkSession = async() => {
+  // send request to backend to check session
+  const response = await fetch('http://localhost:4000/dev/auth/check-session', {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+          'Content-Type': 'application/json'
+      }
+  });
+
+  const responseData = await response.json();
+  console.log(responseData);
+
+  if(response.status === 200) {
+      console.log('Session is active');
+      return true;
+  } else {
+      console.log('Session is not active');
+      return false;
+  }
+};
+
 export const signOut = async () => {
     try {
-        sessionStorage.clear();
+        // sessionStorage.clear();
+        await removeCookies();
         console.log("Sign out success");
         return true;
     } catch (error) {

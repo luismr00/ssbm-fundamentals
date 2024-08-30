@@ -15,7 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
-import { signOut } from '../auth/authService';
+import { signOut, checkSession } from '../auth/authService';
 import { useNavigate } from 'react-router-dom';
 
 const pages = ['tutorials', 'resources', 'pricing', 'contact'];
@@ -65,8 +65,8 @@ function ResponsiveAppBar() {
 
   const checkSignInStatus = async () => {
 
-      const token = sessionStorage.getItem('UID');
-      if (token) {
+      const isLoggedIn = await checkSession();
+      if (isLoggedIn) {
           setSignedIn(true);
       } else {
           setSignedIn(false);

@@ -5,6 +5,7 @@ service: server
 
 plugins:
   - serverless-dotenv-plugin
+  - serverless-offline
 
 provider:
   name: aws
@@ -12,20 +13,47 @@ provider:
   stage: ${opt:stage, 'dev'}  # Default stage is 'dev'
   region: ${opt:region, 'us-east-1'}  # Default region is 'us-east-1'
   environment:
+    NODE_ENV: ${env:NODE_ENV}
+    PRODUCTION_DOMAIN: ${env:PRODUCTION_DOMAIN}
     COGNITO_REGION: ${env:COGNITO_REGION}
     USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
     JWT_SECRET: ${env:JWT_SECRET}
     SES_VERIFIED_EMAIL: ${env:SES_VERIFIED_EMAIL}
     SES_EMAIL_DOMAIN: ${env:SES_EMAIL_DOMAIN}
 
-functions:
+# Adding CORS headers and support for cookies
+custom:
+  serverless-offline:
+    httpPort: 4000
+  cors:
+    dev:
+      origin: http://localhost:8000
+      allowCredentials: true
+      headers:
+        - Content-Type
+        - Authorization
+        - Set-Cookie
+        - X-Requested-With
+    prod:
+      origin: https://${env:PRODUCTION_DOMAIN}
+      allowCredentials: true
+      headers:
+        - Content-Type
+        - Authorization
+        - Set-Cookie
+        - X-Requested-With
 
+functions:
   auth:
     handler: lambdas/auth/authHandler.handler
     events:
       - http:
           path: auth/{proxy+}
           method: any
+          cors:
+            origin: ${self:custom.cors.${self:provider.stage}.origin}
+            allowCredentials: ${self:custom.cors.${self:provider.stage}.allowCredentials}
+            headers: ${self:custom.cors.${self:provider.stage}.headers}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -39,6 +67,10 @@ functions:
       - http:
           path: user/{proxy+}
           method: any
+          cors:
+            origin: ${self:custom.cors.${self:provider.stage}.origin}
+            allowCredentials: ${self:custom.cors.${self:provider.stage}.allowCredentials}
+            headers: ${self:custom.cors.${self:provider.stage}.headers}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -69,4 +101,3 @@ package:
     - README.md
     - serverless.yml
     - .serverless/**
-
