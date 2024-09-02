@@ -281,6 +281,8 @@ function ResponsiveAppBar() {
                       {/* Add conditional rendering if logout for now */}
                       {setting === 'Logout' ? (
                         <Typography textAlign="center" onClick={handleLogout}>{setting}</Typography>
+                      ) : setting === 'Profile' ? (
+                        <a href='/profile'><Typography textAlign="center">{setting}</Typography></a>
                       ) : (
                         <Typography textAlign="center">{setting}</Typography>
                       )}
