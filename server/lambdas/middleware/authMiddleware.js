@@ -1,3 +1,5 @@
+const AWS = require('aws-sdk');
+const cognito = new AWS.CognitoIdentityServiceProvider();
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
@@ -10,6 +12,7 @@ const client = jwksClient({
 function getKey(header, callback) {
   client.getSigningKey(header.kid, (err, key) => {
     if (err) {
+      console.error('Error getting signing key:', err); // Log the error for debugging
       return callback(err);
     }
     const signingKey = key.getPublicKey() || key.rsaPublicKey;
@@ -73,6 +76,7 @@ const verifyToken = (token) => {
           algorithms: ['RS256'], // Cognito uses RS256 to sign JWTs
       }, (err, decoded) => {
           if (err) {
+              console.error('Token verification failed:', err); // Log the error for better visibility
               return reject(err);
           }
           resolve(decoded);
@@ -82,72 +86,145 @@ const verifyToken = (token) => {
 
 // Function to refresh tokens using Cognito's refresh token
 const refreshTokens = async (refreshToken) => {
-  const client = new CognitoIdentityProviderClient({ region: 'your-region' });
+    // const refreshToken = req.cookies.refreshToken;
+    const isDevelopment = process.env.NODE_ENV === 'development';
 
-  const params = {
-      AuthFlow: 'REFRESH_TOKEN_AUTH',
-      ClientId: 'your-client-id', // Your Cognito App Client ID
-      AuthParameters: {
-          'REFRESH_TOKEN': refreshToken
-      }
-  };
+    if (!refreshToken) {
+        return res.status(401).json({ message: 'No refresh token provided' });
+    }
 
-  const command = new InitiateAuthCommand(params);
+    // console.log('refresh token: ', refreshToken);
+    console.log('client id: ', process.env.COGNITO_CLIENT_ID);
 
-  try {
-      const response = await client.send(command);
-      const newAccessToken = response.AuthenticationResult.AccessToken;
-      const newIdToken = response.AuthenticationResult.IdToken;
+    try {
+        // const newTokens = await refreshTokens(refreshToken);
+        const params = {
+            AuthFlow: 'REFRESH_TOKEN_AUTH',
+            ClientId: process.env.COGNITO_CLIENT_ID,
+            AuthParameters: {
+                REFRESH_TOKEN: refreshToken
+            }
+        };
 
-      return { accessToken: newAccessToken, idToken: newIdToken };
-  } catch (error) {
-      throw new Error('Refresh token expired or invalid');
-  }
+        const newTokens = await cognito.initiateAuth(params).promise();
+
+        console.log('Sending back tokens...')
+        return newTokens;
+    } catch (err) {
+        console.log('failed to refresh tokens');
+        console.log(err);
+        return err;
+    }
 };
 
-// Middleware to verify the access token and refresh if necessary
-const verifyTokenMiddleware = async (req, res, next) => {
-  const accessToken = req.cookies.accessToken;
-  const refreshToken = req.cookies.refreshToken;
-
-  if (!accessToken) {
-      return res.status(401).json({ message: 'Access token not found' });
-  }
-
-  try {
-      // Verify the access token
-      const decoded = await verifyToken(accessToken);
+const refreshAndProceed = async (req, res, next, refreshToken) => {
+    try {
+      const newTokens = await refreshTokens(refreshToken);
+  
+      // Set the new tokens in cookies
+      res.cookie('ATK', newTokens.AuthenticationResult.AccessToken, {
+        httpOnly: true,
+        path: '/',
+        maxAge: 300000,  // 5 minutes
+      });
+  
+      res.cookie('UID', newTokens.AuthenticationResult.IdToken, {
+        httpOnly: true,
+        path: '/',
+        maxAge: 300000,  // 5 minutes
+      });
+  
+      // Proceed with the original request
+      req.user = jwt.decode(newTokens.AuthenticationResult.IdToken);
+      next();
+    } catch (refreshError) {
+      return res.status(401).json({ message: 'Session expired, please log in again' });
+    }
+};
+  
+  const verifyTokenMiddleware = async (req, res, next) => {
+    const idToken = req.cookies.UID;
+    const refreshToken = req.cookies.RTK;
+  
+    if (!refreshToken) {
+      return res.status(401).json({ message: 'No refresh token found, please log in' });
+    }
+  
+    if (!idToken) {
+      // Attempt to refresh the tokens if idToken is missing
+      console.log("Id token not found, attempting to refresh tokens");
+      return refreshAndProceed(req, res, next, refreshToken);
+    }
+  
+    try {
+      // Attempt to verify the ID token
+      const decoded = await verifyToken(idToken);
       req.user = decoded;
       next();
-  } catch (err) {
-      if (err.name === 'TokenExpiredError' && refreshToken) {
-          // If access token expired, try to refresh it
-          try {
-              const newTokens = await refreshTokens(refreshToken);
-
-              // Set new tokens as cookies
-              res.cookie('accessToken', newTokens.accessToken, {
-                  httpOnly: true,
-                  secure: process.env.NODE_ENV === 'production',
-                  sameSite: 'Strict',
-              });
-
-              res.cookie('idToken', newTokens.idToken, {
-                  httpOnly: true,
-                  secure: process.env.NODE_ENV === 'production',
-                  sameSite: 'Strict',
-              });
-
-              // Proceed with the original request
-              req.user = jwt.decode(newTokens.accessToken); // No need to verify again; decode is sufficient here
-              next();
-          } catch (refreshError) {
-              return res.status(401).json({ message: 'Refresh token expired, please log in again' });
-          }
+    } catch (err) {
+      if (err.name === 'TokenExpiredError') {
+        // If the ID token is expired, attempt to refresh it
+        console.log("Id token expired, attempting to refresh tokens");
+        return refreshAndProceed(req, res, next, refreshToken);
       } else {
-          return res.status(401).json({ message: 'Invalid token, please log in again' });
+        return res.status(401).json({ message: 'Invalid token, please log in again' });
       }
-  }
-};
+    }
+  };
+  
+
+// // Middleware to verify the access token and refresh if necessary
+// const verifyTokenMiddleware = async (req, res, next) => {
+//   const idToken = req.cookies.UID;
+//   const refreshToken = req.cookies.RTK;
+
+//   console.log('idToken: ', idToken)
+
+//   if (!idToken) {
+//       return res.status(401).json({ message: 'Id token not found' });
+//   }
+
+//   try {
+//       // Verify the access token
+//       const decoded = await verifyToken(idToken);
+//       req.user = decoded;
+//       console.log('token verified. Proceeding with the request');
+//       next();
+//   } catch (err) {
+//       console.log('failed to verify token:', err);
+//       console.log('error name:', err.name);
+//       console.log("refreshing tokens now");
+//       if (err.name === 'TokenExpiredError' && refreshToken) {
+//           // If access token expired, try to refresh it
+//           try {
+//               const newTokens = await refreshTokens(refreshToken);
+//             //   console.log('access token:', newTokens.AuthenticationResult.AccessToken);
+//             //   console.log('id token:', newTokens.AuthenticationResult.IdToken);
+
+//               // Set new tokens as cookies
+//                 res.cookie('ATK', newTokens.AuthenticationResult.AccessToken, {
+//                     httpOnly: true,
+//                     path: '/',                // Ensures cookie is available site-wide
+//                     maxAge: 300000,           // 5 minutes for idToken and accessToken
+//                 });
+
+//                 res.cookie('UID', newTokens.AuthenticationResult.IdToken, {
+//                     httpOnly: true,
+//                     path: '/',                // Ensures cookie is available site-wide
+//                     maxAge: 300000,           // 5 minutes for idToken and accessToken
+//                 });
+
+//               // Proceed with the original request
+//               req.user = jwt.decode(newTokens.AuthenticationResult.IdToken); // No need to verify again; decode is sufficient here
+//               console.log('token verified. Proceeding with the request');
+//               next();
+//           } catch (refreshError) {
+//               return res.status(401).json({ message: 'Refresh token expired, please log in again' });
+//           }
+//       } else {
+//           return res.status(401).json({ message: 'Invalid token, please log in again' });
+//       }
+//   }
+// };
 
 module.exports = verifyTokenMiddleware;

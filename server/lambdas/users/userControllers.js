@@ -2,6 +2,7 @@ const dynamoDb = require('../db/dynamodb');
 const AWS = require('aws-sdk');
 const cognito = new AWS.CognitoIdentityServiceProvider();
 const ses = new AWS.SES();
+const jwt = require('jsonwebtoken');
 // const crypto = require('crypto');
 
 // PLEASE NOTE: The username is the user's email address
@@ -41,43 +42,74 @@ const removeUserFromGroup = async (req, res) => {
 };
 
 // Get user data from cognito user pool (first name, last name, email, and username)
+// const getUserData = async (req, res) => {
+//     const { username } = req.body;
+//     const params = {
+//         UserPoolId: process.env.USER_POOL_ID,
+//         Username: username
+//     };
+
+//     console.log('user pool id: ', process.env.USER_POOL_ID);
+    
+//     try {
+//         const data = await cognito.adminGetUser(params).promise();
+//         const user = {
+//             firstName: data.UserAttributes.find(attr => attr.Name === 'given_name').Value,
+//             lastName: data.UserAttributes.find(attr => attr.Name === 'family_name').Value,
+//             email: data.UserAttributes.find(attr => attr.Name === 'email').Value,
+//             username: data.UserAttributes.find(attr => attr.Name === 'preferred_username').Value
+//         };
+//         res.status(200).json(user);
+//     } catch (err) {
+//         res.status(500).json({ message: 'Failed to get user data' });
+//     }
+// };
+
+
+// Get user data from cookie idToken (first name, last name, email, and username)
 const getUserData = async (req, res) => {
-    const { username } = req.body;
-    const params = {
-        UserPoolId: process.env.USER_POOL_ID,
-        Username: username
-    };
+    console.log('getting user data');
+    console.log('user ', req.user);
+    const user = req.user;
     
     try {
-        const data = await cognito.adminGetUser(params).promise();
-        const user = {
-            firstName: data.UserAttributes.find(attr => attr.Name === 'given_name').Value,
-            lastName: data.UserAttributes.find(attr => attr.Name === 'family_name').Value,
-            email: data.UserAttributes.find(attr => attr.Name === 'email').Value,
-            username: data.UserAttributes.find(attr => attr.Name === 'preferred_username').Value
+        const userData = {
+            firstName: user.given_name,
+            lastName: user.family_name,
+            email: user.email,
+            email_verified: user.email_verified,
+            username: user.preferred_username,
+            subscription: user["cognito:groups"][0]
         };
-        res.status(200).json(user);
+        res.status(200).json(userData);
     } catch (err) {
         res.status(500).json({ message: 'Failed to get user data' });
     }
-};
+}
+
 
 // Edit user data in cognito user pool (first name, last name, and username)
 const editUserData = async (req, res) => {
-    const { username, firstName, lastName } = req.body;
+    const { username, firstName, lastName, email } = req.body;
+    console.log('username: ', username);
+    console.log('firstName: ', firstName);
+    console.log('lastName: ', lastName);
+    console.log('email: ', email);
     const params = {
         UserAttributes: [
             { Name: 'given_name', Value: firstName },
             { Name: 'family_name', Value: lastName },
+            { Name: 'preferred_username', Value: username }
         ],
         UserPoolId: process.env.USER_POOL_ID,
-        Username: username
+        Username: email
     };
     
     try {
         await cognito.adminUpdateUserAttributes(params).promise();
         res.status(200).json({ message: 'User data updated' });
     } catch (err) {
+        console.log(err);
         res.status(500).json({ message: 'Failed to update user data' });
     }
 };

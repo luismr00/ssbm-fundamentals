@@ -16,6 +16,7 @@ provider:
     NODE_ENV: ${env:NODE_ENV}
     PRODUCTION_DOMAIN: ${env:PRODUCTION_DOMAIN}
     COGNITO_REGION: ${env:COGNITO_REGION}
+    COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID}
     USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
     JWT_SECRET: ${env:JWT_SECRET}
     SES_VERIFIED_EMAIL: ${env:SES_VERIFIED_EMAIL}
@@ -34,6 +35,7 @@ custom:
         - Authorization
         - Set-Cookie
         - X-Requested-With
+        - Cache-Control
     prod:
       origin: https://${env:PRODUCTION_DOMAIN}
       allowCredentials: true
@@ -42,6 +44,7 @@ custom:
         - Authorization
         - Set-Cookie
         - X-Requested-With
+        - Cache-Control
 
 functions:
   auth:
