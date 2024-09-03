@@ -18,7 +18,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { signOut, checkSession } from '../auth/authService';
 import { useNavigate } from 'react-router-dom';
 
-const pages = ['tutorials', 'resources', 'pricing', 'contact'];
+const pages = ['videos', 'resources', 'pricing', 'contact'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 function ResponsiveAppBar() {
@@ -147,11 +147,15 @@ function ResponsiveAppBar() {
                   </div>
                   <div className='flex flex-col'>
                     {pages.map((page) => (
+                      <div className='hover:bg-stealPink mb-2 pl-5 pt-2 pb-2'>
+                        <a href={`/${page}`}><p key={page} className="text-white text-paragraph" style={{fontFamily: 'monospace'}}>{page}</p></a>
+                      </div>
+                    ))}
+                    {/* {pages.map((page) => (
                       page === 'tutorials' ? (
                         <div>
                           <div className={`flex justify-between ${tutorialsTabOpen ? 'bg-stealPink' : null} hover:bg-stealPink pl-5 pt-2 pb-2`} style={{cursor: 'pointer'}} onClick={() => setTutorialsTabOpen(!tutorialsTabOpen)}>
                             <p key={page} className="text-white text-paragraph" style={{fontFamily: 'monospace'}}>{page}</p>
-                            {/* Add three more divs with paragraphs where each will contain a paragraph and the div will have a classname of mb-2 pl-5 pt-2 pb-2 */}
                           </div>
                           <div className={`flex flex-col bg-gray-800 ${tutorialsTabOpen ? 'block' : 'hidden'}`}>
                             <div className='hover:bg-dark pl-9 '>
@@ -167,11 +171,10 @@ function ResponsiveAppBar() {
                         </div>
                     ) : (
                       <div className='hover:bg-stealPink mb-2 pl-5 pt-2 pb-2'>
-                        {/* Add an anchor link with an href that points to page */}
                         <a href={`/${page}`}><p key={page} className="text-white text-paragraph" style={{fontFamily: 'monospace'}}>{page}</p></a>
                       </div>
                     )
-                    ))}
+                    ))} */}
                   </div>
                 </div>
               </div>
@@ -229,6 +232,17 @@ function ResponsiveAppBar() {
             </Typography>
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
               {pages.map((page) => (
+                <a href={`/${page}`}>
+                <Button 
+                  key={page}
+                  onClick={handleCloseNavMenu}
+                  sx={{ my: 2, color: 'white', display: 'block' }}
+                >
+                  {page}
+                </Button>
+              </a>
+              ))}
+              {/* {pages.map((page) => (
                 page === 'tutorials' ? (
                   <Button
                     key={page}
@@ -249,7 +263,7 @@ function ResponsiveAppBar() {
                     </Button>
                   </a>
                 )
-              ))}
+              ))} */}
             </Box>
 
             {/* Profile icon button men -> Needs login state condition to work with login/register buttons */}

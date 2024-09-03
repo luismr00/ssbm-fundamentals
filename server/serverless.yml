@@ -21,6 +21,7 @@ provider:
     JWT_SECRET: ${env:JWT_SECRET}
     SES_VERIFIED_EMAIL: ${env:SES_VERIFIED_EMAIL}
     SES_EMAIL_DOMAIN: ${env:SES_EMAIL_DOMAIN}
+    VIDEOS_TABLE: ${env:VIDEOS_TABLE}
 
 # Adding CORS headers and support for cookies
 custom:
@@ -88,6 +89,28 @@ functions:
         Resource: 
           - arn:aws:cognito-idp:us-east-1:902901837865:userpool/${env:COGNITO_USER_POOL_ID}
           - arn:aws:ses:us-east-1:902901837865:identity/${env:SES_EMAIL_DOMAIN}
+  
+  videos:
+    handler: lambdas/videos/videoHandler.handler
+    events:
+      - http:
+          path: videos/{category}/{proxy+}
+          method: any
+          cors:
+            origin: ${self:custom.cors.${self:provider.stage}.origin}
+            allowCredentials: ${self:custom.cors.${self:provider.stage}.allowCredentials}
+            headers: ${self:custom.cors.${self:provider.stage}.headers}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:Scan
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+        Resource: 
+          - arn:aws:dynamodb:us-east-1:902901837865:table/${env:VIDEOS_TABLE}
 
 package:
   include:
