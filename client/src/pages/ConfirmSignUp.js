@@ -11,6 +11,33 @@ const ConfirmSignUp = () => {
     // const [username, setUsername] = useState(location.state?.username || '');
     const [confirmationCode, setConfirmationCode] = useState('');
 
+    const handleAssignRole = async () => {
+        const response = await fetch('http://localhost:4000/dev/user/subscribe', {
+            method: 'POST',
+            include: 'credentials',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                groupName: 'Guest',
+                username: location.state.email,
+                isRegistering: true // This is a flag to indicate that the user can bypass the middleware when registering
+            }),
+        });
+        const data = await response.json();
+        console.log(data);
+        
+        try {
+            if (response.status === 200) {
+                alert('User added to group');
+            } else {
+                console.log('Failed to add user to group');
+            }
+        } catch (error) {
+            console.error('Failed to add user to group: ', error);
+        }
+    };
+
     useEffect(() => {
         if (!location.state) {
             navigate('/register');
@@ -22,6 +49,7 @@ const ConfirmSignUp = () => {
 
         try {
           await confirmSignUp(location.state.email, confirmationCode);
+          await handleAssignRole();
           alert("Account confirmed successfully!\nSign in on next page.");
           navigate('/login');
         } catch (error) {

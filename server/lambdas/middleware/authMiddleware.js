@@ -145,6 +145,11 @@ const refreshAndProceed = async (req, res, next, refreshToken) => {
   const verifyTokenMiddleware = async (req, res, next) => {
     const idToken = req.cookies.UID;
     const refreshToken = req.cookies.RTK;
+
+    if(req.body.isRegistering) {
+      console.log('Bypassing middleware for registration');
+      return next();
+    }
   
     if (!refreshToken) {
       return res.status(401).json({ message: 'No refresh token found, please log in' });
