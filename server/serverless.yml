@@ -112,6 +112,28 @@ functions:
         Resource: 
           - arn:aws:dynamodb:us-east-1:902901837865:table/${env:VIDEOS_TABLE}
 
+  dynamoPractice:
+    handler: lambdas/dynamoPractice/dynamoHandler.handler
+    events:
+      - http:
+          path: dynamo/{proxy+}
+          method: any
+          cors:
+            origin: ${self:custom.cors.${self:provider.stage}.origin}
+            allowCredentials: ${self:custom.cors.${self:provider.stage}.allowCredentials}
+            headers: ${self:custom.cors.${self:provider.stage}.headers}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:Scan
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+        Resource: 
+          - arn:aws:dynamodb:us-east-1:902901837865:table/${env:DYNAMODB_PRACTICE_TABLE}
+
 package:
   include:
     - lambdas/middleware/**
