@@ -14,6 +14,7 @@ import ProfilePage from './pages/ProfilePage';
 import IndexTutorials from './pages/IndexTutorials';
 import Intro from './pages/Intro';
 import Checkout from './pages/Checkout';
+import SubscriptionManager from './pages/SubscriptionManager';
 
 function App() {
   return (
@@ -33,7 +34,8 @@ function App() {
         <Route path='/pricing' element={<Pricing />} />
         <Route path='/resources' element={<Resources />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/subscription/checkout" element={<Checkout />} />
+        <Route path="/subscription/cancel" element={<SubscriptionManager />} />
       </Routes>
     </BrowserRouter>
   );

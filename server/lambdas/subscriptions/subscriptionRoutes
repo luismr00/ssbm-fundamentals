@@ -6,7 +6,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.use(authMiddleware);
 
 router.post('/create', subscriptionControllers.createSubscription);
-// router.get('/read/:id', subscriptionControllers.getSubscription);
+router.get('/read', subscriptionControllers.getSubscription);
+router.post('/cancel', subscriptionControllers.cancelSubscription);
 // router.put('/update/:id', subscriptionControllers.updateSubscription);
 
 // Other advanced queries will be added here
