@@ -5,8 +5,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 router.use(authMiddleware);
 
-router.post('/subscribe', userControllers.addUserToGroup);
-router.delete('/unsubscribe', userControllers.removeUserFromGroup);
+// router.post('/subscribe', userControllers.addUserToGroup);
+// router.delete('/unsubscribe', userControllers.removeUserFromGroup);
 router.get('/getuser', userControllers.getUserData);
 router.post('/edituser', userControllers.editUserData);
 router.put('/change-password', userControllers.changeUserPassword);

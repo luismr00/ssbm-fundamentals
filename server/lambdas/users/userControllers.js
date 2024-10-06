@@ -2,44 +2,48 @@ const dynamoDb = require('../db/dynamodb');
 const AWS = require('aws-sdk');
 const cognito = new AWS.CognitoIdentityServiceProvider();
 const ses = new AWS.SES();
+const TABLE_NAME = process.env.USERSUBSCRIPTIONS_TABLE;
 const jwt = require('jsonwebtoken');
+
 // const crypto = require('crypto');
 
 // PLEASE NOTE: The username is the user's email address
 
 // Add user to cognito user pool group
-const addUserToGroup = async (req, res) => {
-    const { username, groupName } = req.body;
-    const params = {
-        GroupName: groupName,
-        UserPoolId: process.env.USER_POOL_ID,
-        Username: username
-    };
+// CLEAN UP: remove function
+// const addUserToGroup = async (req, res) => {
+//     const { username, groupName } = req.body;
+//     const params = {
+//         GroupName: groupName,
+//         UserPoolId: process.env.USER_POOL_ID,
+//         Username: username
+//     };
     
-    try {
-        await cognito.adminAddUserToGroup(params).promise();
-        res.status(200).json({ message: 'User added to group' });
-    } catch (err) {
-        res.status(500).json({ message: 'Failed to add user to group', error: err.message });
-    }
-};    
+//     try {
+//         await cognito.adminAddUserToGroup(params).promise();
+//         res.status(200).json({ message: 'User added to group' });
+//     } catch (err) {
+//         res.status(500).json({ message: 'Failed to add user to group', error: err.message });
+//     }
+// };    
 
 // Remove user from cognito user pool group
-const removeUserFromGroup = async (req, res) => {
-    const { username, groupName } = req.body;
-    const params = {
-        GroupName: groupName,
-        UserPoolId: process.env.USER_POOL_ID,
-        Username: username
-    };
+// CLEAN UP: Remove function
+// const removeUserFromGroup = async (req, res) => {
+//     const { username, groupName } = req.body;
+//     const params = {
+//         GroupName: groupName,
+//         UserPoolId: process.env.USER_POOL_ID,
+//         Username: username
+//     };
     
-    try {
-        await cognito.adminRemoveUserFromGroup(params).promise();
-        res.status(200).json({ message: 'User removed from group' });
-    } catch (err) {
-        res.status(500).json({ message: 'Failed to remove user from group' });
-    }
-};
+//     try {
+//         await cognito.adminRemoveUserFromGroup(params).promise();
+//         res.status(200).json({ message: 'User removed from group' });
+//     } catch (err) {
+//         res.status(500).json({ message: 'Failed to remove user from group' });
+//     }
+// };
 
 // Get user data from cognito user pool (first name, last name, email, and username)
 // const getUserData = async (req, res) => {
@@ -72,15 +76,29 @@ const getUserData = async (req, res) => {
     console.log('user ', req.user);
     const user = req.user;
     
+    // Get subscription from dynamoDB
+    const params = {
+        TableName: TABLE_NAME,
+        Key: {
+            userId: user.sub
+        }
+    };
+
+    const userData = {
+        firstName: user.given_name,
+        lastName: user.family_name,
+        email: user.email,
+        email_verified: user.email_verified,
+        username: user.preferred_username,
+    };
+
     try {
-        const userData = {
-            firstName: user.given_name,
-            lastName: user.family_name,
-            email: user.email,
-            email_verified: user.email_verified,
-            username: user.preferred_username,
-            subscription: user["cognito:groups"][0]
-        };
+        const subscription = await dynamoDb.get(params).promise()
+        if (subscription.Item) {
+            userData.subscription = subscription.Item.subscriptionTier;
+        }
+
+        console.log('Returning userData: ', userData);
         res.status(200).json(userData);
     } catch (err) {
         res.status(500).json({ message: 'Failed to get user data' });
@@ -216,8 +234,8 @@ const confirmForgotPassword = async (req, res) => {
 };
 
 module.exports = {
-    addUserToGroup,
-    removeUserFromGroup,
+    // addUserToGroup,
+    // removeUserFromGroup,
     getUserData,
     editUserData,
     changeUserPassword,

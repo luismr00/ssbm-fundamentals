@@ -186,6 +186,7 @@ const ProfilePage = () => {
                 <h2>--------------------</h2>
                 <h2>Password: *****************</h2>
               </div>
+              <p>NOTE: MUST ASSIGN GUEST TIER ON INITIAL REGISTRATION THROUGH DYNAMODB</p>
               <UserSubscriptions user={user} changesAllowed={changesAllowed} editUserSubscription={editUserSubscription}/>
             </div>
           </div>
