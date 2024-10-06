@@ -12,24 +12,24 @@ const Checkout = () => {
     const paymentFrequencyRef = useRef(paymentFrequency);
     const navigate = useNavigate();
 
-    const test = () => {
+    // const test = () => {
 
-        const currentDate = new Date();
-        const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 1);
+    //     const currentDate = new Date();
+    //     const expiryDate = new Date();
+    //     expiryDate.setDate(expiryDate.getDate() + 1);
 
-        const item = {
-            createdDate: currentDate.toISOString().slice(0, 10),
-            expirationDate: expiryDate.toISOString().slice(0, 10),
-            paypalId: "eventData.subscriptionID",
-            paymentSource: "eventData.paymentSource",
-            subscriptionStatus: "ACTIVE",
-            subscriptionTier: "Basic",
-            subscriptionType: paymentFrequency === "monthly" ? "RECURRING" : "ONE-TIME",
-        }
+    //     const item = {
+    //         createdDate: currentDate.toISOString().slice(0, 10),
+    //         expirationDate: expiryDate.toISOString().slice(0, 10),
+    //         paypalId: "eventData.subscriptionID",
+    //         paymentMethod: "eventData.paymentMethod",
+    //         subscriptionStatus: "ACTIVE",
+    //         subscriptionTier: "Basic",
+    //         subscriptionType: paymentFrequency === "monthly" ? "RECURRING" : "ONE-TIME",
+    //     }
 
-        console.log(item);
-    }
+    //     console.log(item);
+    // }
 
     const subscribe = async (subscriptionData) => {
 
@@ -45,7 +45,7 @@ const Checkout = () => {
             createdDate: currentDate.toISOString().slice(0, 10),
             expirationDate: expiryDate.toISOString().slice(0, 10),
             paypalId: subscriptionData.subscriptionID,
-            paymentSource: subscriptionData.paymentSource,
+            paymentMethod: subscriptionData.paymentSource,
             subscriptionStatus: "ACTIVE",
             subscriptionTier: "Basic",
             subscriptionType: paymentFrequency === "monthly" ? "RECURRING" : "ONE-TIME",
@@ -155,7 +155,7 @@ const Checkout = () => {
                 <h1>Event Actions</h1>
                 <p>{eventActions}</p>
 
-                <button onClick={test}>Test</button>
+                {/* <button onClick={test}>Test</button> */}
             </div>
         </PayPalScriptProvider>
         
