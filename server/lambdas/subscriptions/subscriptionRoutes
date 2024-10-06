@@ -1,0 +1,16 @@
+const express = require('express');
+const router = express.Router();
+const subscriptionControllers = require('./subscriptionControllers');
+const authMiddleware = require('../middleware/authMiddleware');
+
+router.use(authMiddleware);
+
+router.post('/create', subscriptionControllers.createSubscription);
+router.get('/read', subscriptionControllers.getSubscription);
+router.post('/cancel', subscriptionControllers.cancelSubscription);
+// router.put('/update/:id', subscriptionControllers.updateSubscription);
+
+// Other advanced queries will be added here
+// router.post('/filter-invoices', YOUR_CONTROLLER_HERE);
+
+module.exports = router;
