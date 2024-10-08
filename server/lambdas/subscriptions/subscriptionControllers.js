@@ -1,11 +1,13 @@
 const e = require('express');
 const dynamoDB = require('../db/dynamodb');
 const TABLE_NAME = process.env.USERSUBSCRIPTIONS_TABLE;
+const AWS = require('aws-sdk');
+const ses = new AWS.SES();
 
 // Create item
 const createSubscription = async (req, res) => {
     const id = req.user.sub;
-    const { createdDate, expirationDate, paypalId, paymentSource, subscriptionStatus, subscriptionTier, subscriptionType } = req.body;
+    const { createdDate, expirationDate, paypalId, paymentMethod, subscriptionStatus, subscriptionTier, subscriptionType } = req.body;
 
     const params = {
         TableName: TABLE_NAME,
@@ -14,7 +16,7 @@ const createSubscription = async (req, res) => {
             createdDate,
             expirationDate,
             paypalId,
-            paymentSource,
+            paymentMethod,
             subscriptionStatus,
             subscriptionTier,
             subscriptionType
@@ -23,7 +25,8 @@ const createSubscription = async (req, res) => {
 
     try {
         await dynamoDB.put(params).promise();
-        res.status(200).json({ message: 'Item created successfully!' });
+        await sendSubscriptionSuccessEmail(req.user.email, req.user.given_name, subscriptionTier, subscriptionType, expirationDate);
+        res.status(200).json({ message: 'Confirmation email sent and item created successfully!' });
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: error.message });
@@ -217,7 +220,9 @@ const cancelSubscription = async (req, res) => {
         // Set the subscriptionStatus to CANCELLED on dynamoDB
         await setDatabaseAttrToCancel(req, res);
         console.log("Database attribute set to CANCELLED");
-    
+        // Send an email to the user confirming the cancellation
+        // Make sure to handle cancellations for recurring only from the client side before calling this backend function
+        await sendSubscriptionCancelledEmail(req.user.email, req.user.given_name, req.body.subscriptionTier, req.body.expirationDate);
         // Send a response to the client
         res.status(200).json({ message: 'Subscription cancelled' });
     } catch (error) {
@@ -225,6 +230,80 @@ const cancelSubscription = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+const sendSubscriptionSuccessEmail = async (email, firstName, subscriptionTier, subscriptionType, expirationDate) => {
+    // const { given_name, email } = req.user;
+
+    let message;
+
+    if (subscriptionType === 'RECURRING') {
+        message = `Hi ${firstName},\n\nYour ${subscriptionTier} subscription has been successfully created. Your subscription will renew automatically on ${expirationDate}. Thank you for subscribing!\n\nBest,\n\nMelee Academy Team`;
+    } else {
+        message = `Hi ${firstName},\n\nYour ${subscriptionTier} subscription has been successfully created. Your subscription will expire on ${expirationDate}.Thank you for subscribing!\n\nBest,\n\nMelee Academy Team`;
+    }
+
+    const params = {
+        Destination: {
+            ToAddresses: [email], // The email address to send to
+        },
+        Message: {
+            Body: {
+                Text: {
+                    Charset: 'UTF-8',
+                    Data: message,
+                },
+            },
+            Subject: {
+                Charset: 'UTF-8',
+                Data: 'Subscription Success',
+            },
+        },
+        Source: process.env.SES_VERIFIED_EMAIL, // Your verified SES email address
+    };
+
+    try {
+        await ses.sendEmail(params).promise();
+        // res.status(200).json({ message: 'Verification code sent' });
+        console.log("Email sent");
+    } catch (err) {
+        // res.status(500).json({ message: 'Failed to send verification code', error: err.message });
+        throw new Error("Item created successfully but failed to send email confirmation: " + err.message);
+    }
+};
+
+const sendSubscriptionCancelledEmail = async (email, firstName, subscriptionTier, expirationDate) => {
+    // const { given_name, email } = req.user;
+
+    let message = `Hi ${firstName},\n\nYour ${subscriptionTier} subscription has been cancelled successfully. Your subscription will remain active until ${expirationDate}. If you change your mind and wish to subscribe later again, follow the same pricing page you used to initially subscribe. Thank you again for subscribing!\n\n Best,\n\nMelee Academy Team`;
+
+    const params = {
+        Destination: {
+            ToAddresses: [email], // The email address to send to
+        },
+        Message: {
+            Body: {
+                Text: {
+                    Charset: 'UTF-8',
+                    Data: message,
+                },
+            },
+            Subject: {
+                Charset: 'UTF-8',
+                Data: 'Subscription Success',
+            },
+        },
+        Source: process.env.SES_VERIFIED_EMAIL, // Your verified SES email address
+    };
+
+    try {
+        await ses.sendEmail(params).promise();
+        // res.status(200).json({ message: 'Verification code sent' });
+        console.log("Email sent");
+    } catch (err) {
+        // res.status(500).json({ message: 'Failed to send verification code', error: err.message });
+        throw new Error("Subscription cancelled successfully but failed to send email confirmation: " + err.message);
+    }
+};
 
 
 

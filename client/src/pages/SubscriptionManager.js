@@ -52,7 +52,11 @@ const SubscriptionManager = () => {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ subscriptionId: subscriptionData.paypalId })
+            body: JSON.stringify({ 
+                subscriptionId: subscriptionData.paypalId,
+                subscriptionTier: subscriptionData.subscriptionTier,
+                expirationDate: subscriptionData.expirationDate 
+            })
         });
 
         const data = await response.json();

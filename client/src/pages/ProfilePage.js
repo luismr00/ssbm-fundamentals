@@ -187,6 +187,7 @@ const ProfilePage = () => {
                 <h2>Password: *****************</h2>
               </div>
               <p>NOTE: MUST ASSIGN GUEST TIER ON INITIAL REGISTRATION THROUGH DYNAMODB</p>
+              <p>SHOULD DISPLAY EXPIRATION DATE, IS IT RECURRING, ETC.</p>
               <UserSubscriptions user={user} changesAllowed={changesAllowed} editUserSubscription={editUserSubscription}/>
             </div>
           </div>
